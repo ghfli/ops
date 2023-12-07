@@ -67,9 +67,10 @@ set switchbuf=useopen,usetab,split	" split/switch buffer options
 " search in a singe file. This will confuse latex-suite. Set your grep
 " program to alway generate a file-name.
 if executable('ack')
-  set grepprg=ack\ -H\ $*
+  set grepprg=ack\ -Hk\ $*
 elseif executable('ag')
-  set grepprg=ag\ -H\ $*
+  set grepprg=ag\ --vimgrep\ $*
+  set grepformat=%f:%l:%c:%m
 else
   set grepprg=grep\ -nH\ $*
 endif
