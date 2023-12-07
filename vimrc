@@ -23,13 +23,13 @@ set showmode
 
 " Only do this part when compiled with support for autocommands.
 if has("autocmd")
-	" When editing a file, always jump to the last known cursor position.
-	" Don't do it when the position is invalid or when inside an event handler
-	" (happens when dropping a file on gvim).
-	autocmd BufReadPost *
-	\ if line("'\"") > 0 && line("'\"") <= line("$") |
-	\   exe "normal g`\"" |
-	\ endif
+    " When editing a file, always jump to the last known cursor position.
+    " Don't do it when the position is invalid or when inside an event handler
+    " (happens when dropping a file on gvim).
+    autocmd BufReadPost *
+    \ if line("'\"") > 0 && line("'\"") <= line("$") |
+    \   exe "normal g`\"" |
+    \ endif
 endif " has("autocmd")
 
 " use menus in console mode
@@ -66,9 +66,12 @@ set switchbuf=useopen,usetab,split	" split/switch buffer options
 " IMPORTANT: grep will sometimes skip displaying the file name if you
 " search in a singe file. This will confuse latex-suite. Set your grep
 " program to alway generate a file-name.
-set grepprg=grep\ -nH\ $*
 if executable('ack')
-    set grepprg=ack 	" used in MacOS
+  set grepprg=ack\ -H\ $*
+elseif executable('ag')
+  set grepprg=ag\ -H\ $*
+else
+  set grepprg=grep\ -nH\ $*
 endif
 
 " make the cursor always in the middle of window
@@ -81,10 +84,10 @@ if has("cscope") && executable("cscope")
     set nocsverb
     " add any database in current directory
     if filereadable("cscope.out")
-		cs add cscope.out
-	" else add database pointed to by environment
-	elseif $CSCOPE_DB != ""
-		cs add $CSCOPE_DB
+        cs add cscope.out
+    " else add database pointed to by environment
+    elseif $CSCOPE_DB != ""
+        cs add $CSCOPE_DB
     endif
     set csverb
 
@@ -119,19 +122,19 @@ if has("cscope") && executable("cscope")
     " split instead of a horizontal one
 
     nmap <C-Space><C-Space>s
-	    \:vert scs find s <C-R>=expand("<cword>")<CR><CR>
+        \:vert scs find s <C-R>=expand("<cword>")<CR><CR>
     nmap <C-Space><C-Space>g
-	    \:vert scs find g <C-R>=expand("<cword>")<CR><CR>
+        \:vert scs find g <C-R>=expand("<cword>")<CR><CR>
     nmap <C-Space><C-Space>c
-	    \:vert scs find c <C-R>=expand("<cword>")<CR><CR>
+        \:vert scs find c <C-R>=expand("<cword>")<CR><CR>
     nmap <C-Space><C-Space>t
-	    \:vert scs find t <C-R>=expand("<cword>")<CR><CR>
+        \:vert scs find t <C-R>=expand("<cword>")<CR><CR>
     nmap <C-Space><C-Space>e
-	    \:vert scs find e <C-R>=expand("<cword>")<CR><CR>
+        \:vert scs find e <C-R>=expand("<cword>")<CR><CR>
     nmap <C-Space><C-Space>i
-	    \:vert scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+        \:vert scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
     nmap <C-Space><C-Space>d
-	    \:vert scs find d <C-R>=expand("<cword>")<CR><CR>
+        \:vert scs find d <C-R>=expand("<cword>")<CR><CR>
 
 endif
 
@@ -215,7 +218,10 @@ let g:ale_lint_on_text_changed = 'never'
 let g:ale_linters_explicit = 1
 
 if filereadable(expand("~/.vim/coc.vimrc"))
-	source ~/.vim/coc.vimrc
+  if v:version < 830
+    let g:coc_disable_startup_warning = 1
+  endif
+  source ~/.vim/coc.vimrc
 endif
 
 " vim-plug是插件管理工具
