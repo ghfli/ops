@@ -34,3 +34,7 @@ pod () {
     [ -r $ALLPODS ] || apods
     cat $ALLPODS | awk '{print $2}' | grep -o "^$1[^ ]*$2"
 }
+
+if [ -f ~/.bash_aliases.sec ]; then
+    . ~/.bash_aliases.sec
+fi
