@@ -102,6 +102,9 @@ bind I login on
 bind O login off
 bind } history
 
+# Enable non-blocking mode to better cope with flaky ssh connection
+defnonblock 5
+
 #https://wiki.archlinux.org/index.php/GNU_Screen#Tips_and_tricks
 #Turn your hardstatus line into a dynamic urxvt|xterm|aterm window title
 #This one is pretty simple; just switch your current hardstatus line into a
@@ -123,3 +126,7 @@ defscrollback 16000
 screen -t ctrl-a-0 0
 screen -t ctrl-a-1 1
 screen -t ctrl-a-2 2
+
+#Uncomment to add password protection for reattaching
+#password ZM.lm5mtHdZTk #Sp1234%^
+#password
