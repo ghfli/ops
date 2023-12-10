@@ -35,14 +35,14 @@ insfn=instanceIds.$reg
 imgfn=imageIds.$img
 [ -r $imgfn ] || awk "(\$2 ~ \"^$img$\") {print \$1}" images > $imgfn
 
-rpfn=secretIds.passwd 
-skfn=secretIds.ssh 
+rpfn=secretIds.passwd
+skfn=secretIds.ssh
 SK="[$(head -1 $skfn)"
 for k in $(tail -n +2 $skfn); do
     SK+=", $k"
 done
 SK+="]"
-udfn=user-data.yaml 
+udfn=user-data.yaml
 
 cat > cntb-reins.yaml <<-EOF
 	defaultUser: root
@@ -57,5 +57,5 @@ for i in $(cat $insfn) ; do
 	echo reinstalling $i...
 	cntb reinstall instance $i -f cntb-reins.yaml
 done
-popd > /dev/null  
+popd > /dev/null
 
