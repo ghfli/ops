@@ -3,8 +3,13 @@
 cntb resetPassword instance $INSTANCEID --sshkeys $SECID
 cntb start instance $INSTANCEID
 
-openssl enc -chacha20 -pbkdf2 -a -i $RAW -o $ENC -pass file:~/.secrets/passwd.r1k
-openssl enc -d -chacha20 -pbkdf2 -a -i $ENC -o $RAW -pass file:~/.secrets/passwd.r1k
+openssl enc -chacha20 -pbkdf2 -a -in $RAW -out $ENC -pass file:~/.secrets/passwd.r1k
+openssl enc -d -chacha20 -pbkdf2 -a -in $ENC -out $RAW -pass file:~/.secrets/passwd.r1k
+cat > oenc2txt.sh <<-EOF
+	#!/bin/bash
+	odec.sh "$1" -
+	EOF
+git config diff.oenc.textconv oenc2txt.sh
 
 apt install git universal-ctags silversearcher-ag wireguard
 wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz

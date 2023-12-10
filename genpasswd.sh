@@ -20,8 +20,9 @@ file=${2:-passwd.r$len}
 dir=${3:-~/.secrets}
 [ -d "$dir" ] || mkdir "$dir" && chmod go-rwx "$dir"
 pushd "$dir" > /dev/null
+umask 0177
 LANG=C tr -dc 'A-Za-z0-9!@#$^&*?_~' < /dev/urandom \
-        | head -c 1024 > passwd.r1k 
+        | head -c 1024 > passwd.r1k
 let i=0x$(openssl rand -hex 2)%953+1
 let j=$i+$len-1
 cut -b $i-$j passwd.r1k | tee $file
