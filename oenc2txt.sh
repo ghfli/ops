@@ -1,2 +1,2 @@
 #!/bin/bash
-odec.sh "$1" -
+./odec.sh "$1" -

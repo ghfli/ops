@@ -7,9 +7,9 @@ openssl enc -chacha20 -pbkdf2 -a -in $RAW -out $ENC -pass file:~/.secrets/passwd
 openssl enc -d -chacha20 -pbkdf2 -a -in $ENC -out $RAW -pass file:~/.secrets/passwd.r1k
 cat > oenc2txt.sh <<-EOF
 	#!/bin/bash
-	odec.sh "$1" -
+	./odec.sh "$1" -
 	EOF
-git config diff.oenc.textconv oenc2txt.sh
+git config diff.oenc.textconv ./oenc2txt.sh
 
 apt install git universal-ctags silversearcher-ag wireguard
 wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz
