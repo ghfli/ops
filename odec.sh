@@ -5,7 +5,7 @@
 #   and password file pwfn
 # 
 
-set -xe
+#set -xe
 infn=${1:--}
 if [ x$infn = 'x-' ] ; then
 	outfn=${2:--}

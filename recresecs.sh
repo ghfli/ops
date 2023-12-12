@@ -13,7 +13,8 @@ if [ ! -d "$dir" ] ; then
 	exit 1
 fi
 pushd "$dir" > /dev/null
-cntb get secrets | awk '($3 !~ "TYPE") {print $1}' > secretIds.all
+cntb get secrets -o yaml > secrets.yaml
+yq '.[]|.secretId' secrets.yaml > secretIds.all
 for i in $(cat secretIds.all) ; do
 	cntb delete secret $i
 done
@@ -22,7 +23,7 @@ cntb create secret --name $prfn --type password --value "$(cat $prfn)"
 for f in ssh.* ; do
 	cntb create secret --name $f --type ssh --value "$(cat $f)"
 done
-cntb get secrets > secrets
-awk '($3 ~ "password") {print $1}' secrets > secretIds.passwd
-awk '($3 ~ "ssh") {print $1}' secrets > secretIds.ssh
+cntb get secrets -o yaml > secrets.yaml
+yq '.[]|select(.type=="password")|.secretId' secrets.yaml > secretIds.passwd
+yq '.[]|select(.type=="ssh")|.secretId' secrets.yaml > secretIds.ssh
 popd > /dev/null

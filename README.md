@@ -1,6 +1,6 @@
 # ops
 
-Utilize contabo cntb and ubuntu multipass to set up production and dev environments  
+Utilize contabo cntb and ubuntu multipass to set up production and dev environments
 
 ## Automate [contabo](https://contabo.com) ubuntu instance configuration 
 

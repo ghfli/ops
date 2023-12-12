@@ -16,11 +16,14 @@ wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz
 tar xvf node-v20.10.0-linux-x64.tar.xz -C /opt
 ln -s /opt/node-v20.10.0-linux-x64/bin/* /usr/local/bin
 
+wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+	-O ~/bin/yq && chmod +x ~/bin/yq
+brew install yq
+pacman -Syv go ctags go-yq
+
 ufw allow 22
 ufw default deny
 ufw enable
-
-pacman -Syv go ctags
 
 microk8s refresh-certs -c
 microk8s refresh-certs -e server.crt
