@@ -20,40 +20,30 @@ for instance in "${instances[@]}" ; do
 	#[[ -r wg-key-$instanceId.pri && -r wg-key-$instanceId.pub ]] || \
 	wg genkey | tee wg-key-$instanceId.pri | wg pubkey > wg-key-$instanceId.pub
 
+	# assuming the total number of instances is less than 256
+	wg0_ip=10.0.0.$i
 	cat > wg-interface-$instanceId <<-EOF
 		[Interface]
+		Address = $wg0_ip/24
 		PrivateKey = $(cat wg-key-$instanceId.pri)
 		ListenPort = $port
 		EOF
-	wg0_ip=10.0.0.$i
 	cat > wg-peer-$instanceId <<-EOF
 		[Peer]
 		Publickey = $(cat wg-key-$instanceId.pub)
 		Endpoint = $ipv4:$port
 		AllowedIPs = $wg0_ip/32 
 		EOF
-	cat > wg-netplan-$instanceId <<-EOF
-		network:
-		  version: 2
-		  tunnels:
-		    wg0:
-		      mode: wireguard
-		      addresses:
-		        - $wg0_ip/24
-		EOF
-	yq ".write_files[0].content=\
-		\"$(cat wg-netplan-$instanceId)\""\
-			user-data-temp.yaml > user-data-$instanceId.yaml
 	echo $instanceId >> instanceIds.all
 	let i++
 done
 
 for instanceId in $(cat instanceIds.all) ; do 
 	peerIds="$(grep -v $instanceId instanceIds.all)"
-	yq -i ".wireguard.interfaces[0].content=\
+	yq ".wireguard.interfaces[0].content=\
 		\"$(cat wg-interface-$instanceId; \
 			for peerId in $peerIds ; \
 				do cat wg-peer-$peerId; done)\"" \
-		user-data-$instanceId.yaml
+		user-data-temp.yaml > user-data-$instanceId.yaml
 done
 popd > /dev/null
