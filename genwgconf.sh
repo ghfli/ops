@@ -9,36 +9,51 @@ port=${1:-5555}
 dir=${2:-~/.secrets}
 pushd "$dir" > /dev/null
 umask 0177
+let i=1
 echo > instanceIds.all
-readarray instances < <(yq '.[]|@json' instances.yaml)
+readarray instances < <(yq 'sort_by(.ipv4)|.[]|@json' instances.yaml)
 for instance in "${instances[@]}" ; do
 	eval $(echo "$instance" | \
 			yq -o shell '{"ipv4": .ipv4, "instanceId": .instanceId}' -)
 
-	echo generating wireguard config for instanceId $instanceId ipv4 $ipv4
-	[[ -r wg-$instanceId-key.pri && -r wg-$instanceId-key.pub ]] || \
-	wg genkey | tee wg-$instanceId-key.pri | wg pubkey > wg-$instanceId-key.pub
+	echo generating wireguard config for instanceId $instanceId with ip $ipv4
+	#[[ -r wg-key-$instanceId.pri && -r wg-key-$instanceId.pub ]] || \
+	wg genkey | tee wg-key-$instanceId.pri | wg pubkey > wg-key-$instanceId.pub
 
-	cat > wg-$instanceId-interface <<-EOF
-		[Interface]	
-		PrivateKey = $(cat wg-$instanceId-key.pri)
+	cat > wg-interface-$instanceId <<-EOF
+		[Interface]
+		PrivateKey = $(cat wg-key-$instanceId.pri)
 		ListenPort = $port
 		EOF
-	cat > wg-$instanceId-peer <<-EOF
-		[Peer]	
-		Publickey = $(cat wg-$instanceId-key.pub)
+	wg0_ip=10.0.0.$i
+	cat > wg-peer-$instanceId <<-EOF
+		[Peer]
+		Publickey = $(cat wg-key-$instanceId.pub)
 		Endpoint = $ipv4:$port
-		AllowedIPs = 0.0.0.0/0
+		AllowedIPs = $wg0_ip/32 
 		EOF
+	cat > wg-netplan-$instanceId <<-EOF
+		network:
+		  version: 2
+		  tunnels:
+		    wg0:
+		      mode: wireguard
+		      addresses:
+		        - $wg0_ip/24
+		EOF
+	yq ".write_files[0].content=\
+		\"$(cat wg-netplan-$instanceId)\""\
+			user-data-temp.yaml > user-data-$instanceId.yaml
 	echo $instanceId >> instanceIds.all
+	let i++
 done
 
 for instanceId in $(cat instanceIds.all) ; do 
 	peerIds="$(grep -v $instanceId instanceIds.all)"
-	yq ".wireguard.interfaces[0].content=\
-		\"$(cat wg-$instanceId-interface; \
+	yq -i ".wireguard.interfaces[0].content=\
+		\"$(cat wg-interface-$instanceId; \
 			for peerId in $peerIds ; \
-				do cat wg-$peerId-peer; done)\"" \
-		user-data-temp.yaml > user-data-$instanceId.yaml
+				do cat wg-peer-$peerId; done)\"" \
+		user-data-$instanceId.yaml
 done
 popd > /dev/null
