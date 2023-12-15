@@ -25,25 +25,27 @@ ufw allow 22
 ufw default deny
 ufw enable
 
-microk8s refresh-certs -c
-microk8s refresh-certs -e server.crt
-microk8s refresh-certs -e front-proxy-client.crt
-
 # on node 1
 umask 077
 wg genkey | tee wgp1_key.pri | wg pubkey > wgp1_key.pub
 wg genkey | tee wgp2_key.pri | wg pubkey > wgp2_key.pub
 ip link add dev wg0 type wireguard
-ip a a 192.168.2.1/24 dev wg0
+ip a a 10.0.0.1/24 dev wg0
 wg set wg0 listen-port 5555 private-key wgp1_key.pri peer $(cat wgp2_key.pub) \
-	allowed-ips 0.0.0.0/0 endpoint 10.0.0.2:5555
+	allowed-ips 10.0.0.2/32 endpoint 192.168.2.2:5555
 ip link set up dev wg0
 tcpdump -nvelxxi eth1 port 5555
 wg showconf wg0 | tee wgp1.conf
 # on node 2, copy wgp2_key.pri from node 1
 ip link add dev wg0 type wireguard
-ip a a 192.168.2.2/24 dev wg0
-wg set wg0 listen-port 5555 private-key wgp2_key.pri peer $(cat wgp1_key.pub) allowed-ips 0.0.0.0/0 endpoint 10.0.0.1:5555
+ip a a 10.0.0.2/24 dev wg0
+wg set wg0 listen-port 5555 private-key wgp2_key.pri peer $(cat wgp1_key.pub) allowed-ips 10.0.0.1/32 endpoint 192.168.2.1:5555
 ip link set up dev wg0
-ping 192.168.2.1
+ping 10.0.0.1
 wg showconf wg0 | tee wgp2.conf
+
+snap info microk8s
+microk8s refresh-certs -c
+microk8s refresh-certs -e server.crt
+microk8s refresh-certs -e front-proxy-client.crt
+
