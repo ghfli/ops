@@ -11,7 +11,7 @@ cat > oenc2txt.sh <<-EOF
 	EOF
 git config diff.oenc.textconv ./oenc2txt.sh
 
-apt install git universal-ctags silversearcher-ag wireguard
+apt install git universal-ctags silversearcher-ag wireguard snapd
 snap install go --classic
 wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz
 tar xvf node-v20.10.0-linux-x64.tar.xz -C /opt
@@ -19,8 +19,12 @@ ln -s /opt/node-v20.10.0-linux-x64/bin/* /usr/local/bin
 
 wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
 	-O ~/bin/yq && chmod +x ~/bin/yq
+#mac
 brew install yq
+#arch
 pacman -Syv go ctags go-yq
+#debian
+update-alternatives --config editor
 
 ufw allow 22
 ufw default deny
@@ -64,3 +68,33 @@ microk8s refresh-certs -c
 microk8s refresh-certs -e server.crt
 microk8s refresh-certs -e front-proxy-client.crt
 
+#on each node
+for i in $(seq 4) ; do ./prelvp.sh $i ; done
+#on node 1
+microk8s helm repo add sig-storage-local-static-provisioner https://kubernetes-sigs.github.io/sig-storage-local-static-provisioner
+microk8s helm template --debug sig-storage-local-static-provisioner/local-static-provisioner > lvp.generated.yaml
+microk8s kubectl create -f lvp.generated.yaml
+cat > sc-default-lvp.yaml <<-EOF
+	apiVersion: storage.k8s.io/v1
+	kind: StorageClass
+	metadata:
+	  name: fast-disks
+	  annotations:
+	    storageclass.kubernetes.io/is-default-class: "true"
+	provisioner: kubernetes.io/no-provisioner
+	volumeBindingMode: WaitForFirstConsumer
+	# Supported policies: Delete, Retain
+	reclaimPolicy: Delete
+	EOF
+microk8s kubectl apply -f sc-default-lvp.yaml
+microk8s helm install $release . -n $namespace --create-namespace --debug
+cat > update-$release-tls-secret.sh <<-EOF
+	#!/bin/bash
+	microk8s kubectl delete secret/$release-tls-secret -n $namespace
+	microk8s kubectl create secret/$release-tls-secret -n $namespace \
+		--key $path_to_key_file --cert $path_to_cert_file
+	EOF
+chmod +x update-$release-tls-secret.sh
+./update-$release-tls-secret.sh
+microk8s kubectl rollout restart statefulset/minio-data-minio-service-0
+microk8s helm uninstall $release -n $namespace
