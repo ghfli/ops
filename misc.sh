@@ -45,6 +45,10 @@ ping 10.0.0.1
 wg showconf wg0 | tee wgp2.conf
 
 snap info microk8s
+for i in 1 2 3; do
+	scp -P $port ./icmk8s.sh root@svr$i:
+	ssh -p $port root@svr1 /root/icmk8s.sh 10.0.0.$i
+done
 microk8s refresh-certs -c
 microk8s refresh-certs -e server.crt
 microk8s refresh-certs -e front-proxy-client.crt
