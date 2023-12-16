@@ -12,6 +12,7 @@ cat > oenc2txt.sh <<-EOF
 git config diff.oenc.textconv ./oenc2txt.sh
 
 apt install git universal-ctags silversearcher-ag wireguard
+snap install go --classic
 wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz
 tar xvf node-v20.10.0-linux-x64.tar.xz -C /opt
 ln -s /opt/node-v20.10.0-linux-x64/bin/* /usr/local/bin
@@ -49,6 +50,16 @@ for i in 1 2 3; do
 	scp -P $port ./icmk8s.sh root@svr$i:
 	ssh -p $port root@svr1 /root/icmk8s.sh 10.0.0.$i
 done
+#on node 1:
+microk8s add-node # each node needs its own token to join the master node
+#on node 2
+microk8s join 10.0.0.1:...
+#on node 1:
+microk8s add-node
+#on node 3
+microk8s join 10.0.0.1:...
+microk8s kubectl drain $node
+microk8s kubectl uncordon $node
 microk8s refresh-certs -c
 microk8s refresh-certs -e server.crt
 microk8s refresh-certs -e front-proxy-client.crt
