@@ -1,4 +1,5 @@
-[[ $PATH =~ .*:~/go/bin(:)? ]] || export PATH="$PATH:~/go/bin:~/bin"
+[[ $PATH =~ .*:~/go/bin(:)? ]] || export PATH="$PATH:~/go/bin:~/gems/bin:~/bin"
+export GEM_HOME="$HOME/gems"
 
 alias cp='cp -i'
 alias mv='mv -i'
