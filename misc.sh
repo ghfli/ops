@@ -96,5 +96,20 @@ cat > update-$release-tls-secret.sh <<-EOF
 	EOF
 chmod +x update-$release-tls-secret.sh
 ./update-$release-tls-secret.sh
-microk8s kubectl rollout restart statefulset/minio-data-minio-service-0
+microk8s kubectl rollout restart statefulset/minio-service -n $namespace
+microk8s kubectl rollout restart statefulset/hyi-couchdb -n $namespace
+microk8s kubectl rollout restart deployment/app-service -n $namespace
+microk8s kubectl rollout restart deployment/worker-service -n $namespace
 microk8s helm uninstall $release -n $namespace
+
+# No need to drain and uncordon
+microk8s kubectl get nodes -o wide
+# microk8s kubectl drain --ignore-daemonsets $node
+# microk8s kubectl uncordon $node
+
+# fix couchdb
+microk8s kubectl exec -n $namespace -it pod/$couchdb -- /bin/bash
+	for db in _users _replicator _global_changes ; do
+		curl -X PUT http://127.0.0.1:5984/$db -u $admin:$password
+	done
+
