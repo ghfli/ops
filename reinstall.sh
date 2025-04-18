@@ -23,39 +23,40 @@ if [ "x$img" != "xubuntu-22.04" ] ; then
 fi
 pushd "$dir" > /dev/null
 
-# workaround cntb keeps complaining when [-o jsonpath='$..instanceId[?(@.region=="US-east")]'] is requested
-[ -r instances ] || cntb get instances > instances
+#[ -r instances.yaml ] || \
+	cntb get instances -o yaml > instances.yaml
 insfn=instanceIds.$reg
-[ -r $insfn ] || awk "/$reg/ {print \$1}" instances > $insfn
-# some fields such as DISPLAYNAME and IMAGEID are empty before reinstallation
-# so the following line does not work
-# awk "(\$5 ~ \"^$reg$\") {print \$1}" instances > $insfn
+#[ -r $insfn ] || \
+	reg=$reg yq '.[]|select(.region==strenv(reg))|.instanceId|@json' \
+		instances.yaml > $insfn
 
-[ -r images ] || cntb get images > images
+#[ -r images ] || \
+	cntb get images -o yaml > images.yaml
 imgfn=imageIds.$img
-[ -r $imgfn ] || awk "(\$2 ~ \"^$img$\") {print \$1}" images > $imgfn
+#[ -r $imgfn ] || \
+	img=$img yq '.[]|select(.name==strenv(img))|.imageId' images.yaml > $imgfn
 
-rpfn=secretIds.passwd 
-skfn=secretIds.ssh 
+rpfn=secretIds.passwd
+skfn=secretIds.ssh
+#[[ -r $rpfn && -r $skfn ]] || ./recresecs.sh
 SK="[$(head -1 $skfn)"
 for k in $(tail -n +2 $skfn); do
     SK+=", $k"
 done
 SK+="]"
-udfn=user-data.yaml 
-
-cat > cntb-reins.yaml <<-EOF
-	defaultUser: root
-	imageId: $(cat $imgfn)
-	rootPassword: $(cat $rpfn)
-	sshKeys: $SK
-	userData: |
-		$(sed -e 's/^/  /g' $udfn)
-	EOF
-
 for i in $(cat $insfn) ; do 
-	echo reinstalling $i...
-	cntb reinstall instance $i -f cntb-reins.yaml
+	echo reinstalling instance $i...
+	udfn=user-data-$i.yaml
+	[ -r $udfn ] || ./genwgconf.sh
+	cat > cntb-reins-$i.yaml <<-EOF
+		defaultUser: root
+		imageId: $(cat $imgfn)
+		rootPassword: $(cat $rpfn)
+		sshKeys: $SK
+		userData: |
+			$(sed -e 's/^/  /g' $udfn)
+		EOF
+	cntb reinstall instance $i -f cntb-reins-$i.yaml
 done
-popd > /dev/null  
+popd > /dev/null
 

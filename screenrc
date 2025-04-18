@@ -1,7 +1,7 @@
 #
-# This is an example for the global screenrc file.
-# You may want to install this file as /usr/local/etc/screenrc.
-# Check config.h for the exact location.
+# This is an example for the global screenrc file, combined with a
+# user's .screenrc file.  You may want to install this file as
+# ~/.screenrc.
 #
 # Flaws of termcap and standard settings are done here.
 #
@@ -9,6 +9,11 @@
 startup_message off
 
 #defflow on # will force screen to process ^S/^Q
+#
+# don't kill window after the process died
+# zombie "^["
+# emulate .logout message
+# pow_detach_msg "$LOGNAME logged out$:cr:$:nl:See you!"
 
 deflogin on
 #autodetach off
@@ -102,6 +107,11 @@ bind I login on
 bind O login off
 bind } history
 
+# Enable non-blocking mode to better cope with flaky ssh connection
+defnonblock 5
+# blankerprg rain -d 100
+# idle 30 blanker
+
 #https://wiki.archlinux.org/index.php/GNU_Screen#Tips_and_tricks
 #Turn your hardstatus line into a dynamic urxvt|xterm|aterm window title
 #This one is pretty simple; just switch your current hardstatus line into a
@@ -112,6 +122,15 @@ hardstatus string "[$USER@%H screen $STY %n%?: %t%?] %h"
 #hardstatus string "screen (%n: %t)"
 #caption string "%{= kw}%Y-%m-%d;%c %{= kw}%-Lw%{= kG}%{+b}[%n %t]%{-b}%{= kw}%+Lw%1`"
 #caption always
+# caption always "%3n %t%? @%u%?%? [%h]%?%=%c"
+# hardstatus alwaysignore
+# hardstatus alwayslastline "%Lw"
+
+# bind = resize =
+# bind + resize +1
+# bind - resize -1
+# bind _ resize max
+#
 
 #Fix for residual editor text
 #When you open a text editor like nano in screen and then close it, the text
@@ -123,3 +142,7 @@ defscrollback 16000
 screen -t ctrl-a-0 0
 screen -t ctrl-a-1 1
 screen -t ctrl-a-2 2
+
+#Uncomment to add password protection for reattaching
+#password ZM.lm5mtHdZTk #Sp1234%^
+#password
