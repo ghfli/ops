@@ -6,8 +6,8 @@
 #   default: reg=US-east dir=~/.secrets img=ubuntu-22.04
 
 #set -xe
-reg=${1:-"US-east"}
-if [ "x$reg" != "xUS-east" ] ; then
+reg=${1:-"US-central"}
+if [ "x$reg" != "xUS-east" -a "x$reg" != "xUS-central" ] ; then
 	echo Error: region \"$reg\" not supported
 	exit 1
 fi
@@ -16,8 +16,8 @@ if [ ! -d "$dir" ] ; then
 	echo Error: \"$dir\" not existed
 	exit 2
 fi
-img=${3:-"ubuntu-22.04"}
-if [ "x$img" != "xubuntu-22.04" ] ; then
+img=${3:-"ubuntu-24.04"}
+if [ "x$img" != "xubuntu-24.04" ] ; then
 	echo Error: image \"$img\" not supported
 	exit 3
 fi
