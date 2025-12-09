@@ -7,7 +7,7 @@
 
 #set -xe
 dir=${1:-~/.secrets}
-[ -r "$dir"/passwd.root ] || genpasswd.sh 16 passwd.root "$dir"
+[ -r "$dir"/passwd.root ] || ./genpasswd.sh 16 passwd.root "$dir"
 if [ ! -d "$dir" ] ; then
 	echo Error: \"$dir\" not existed
 	exit 1

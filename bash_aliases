@@ -1,5 +1,7 @@
 [[ $PATH =~ .*:~/go/bin(:)? ]] || export PATH="$PATH:~/go/bin:~/gems/bin:~/bin"
 export GEM_HOME="$HOME/gems"
+export SCREENDIR="$HOME/.screen"
+[[ -d $SCREENDIR ]] || mkdir -p $SCREENDIR && chmod 0700 $SCREENDIR
 
 alias cp='cp -i'
 alias mv='mv -i'

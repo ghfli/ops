@@ -3,9 +3,10 @@
 # Usage: $0 [reg [dir [img]]]
 #
 #   reinstall contabo $img instances in region $reg with secrets saved in dir $dir
-#   default: reg=US-east dir=~/.secrets img=ubuntu-22.04
+#   default: reg=US-central dir=~/.secrets img=ubuntu-24.04
 
 #set -xe
+ops_dir=$(pwd)
 reg=${1:-"US-central"}
 if [ "x$reg" != "xUS-east" -a "x$reg" != "xUS-central" ] ; then
 	echo Error: region \"$reg\" not supported
@@ -47,7 +48,7 @@ SK+="]"
 for i in $(cat $insfn) ; do 
 	echo reinstalling instance $i...
 	udfn=user-data-$i.yaml
-	[ -r $udfn ] || ./genwgconf.sh
+	[ -r $udfn ] || $ops_dir/genwgconf.sh
 	cat > cntb-reins-$i.yaml <<-EOF
 		defaultUser: root
 		imageId: $(cat $imgfn)
@@ -56,7 +57,7 @@ for i in $(cat $insfn) ; do
 		userData: |
 			$(sed -e 's/^/  /g' $udfn)
 		EOF
-	cntb reinstall instance $i -f cntb-reins-$i.yaml
+	cntb reinstall instance $i -d trace -f cntb-reins-$i.yaml
 done
 popd > /dev/null
 

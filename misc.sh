@@ -13,9 +13,10 @@ git config diff.oenc.textconv ./oenc2txt.sh
 
 apt install git universal-ctags silversearcher-ag wireguard snapd
 snap install go --classic
-wget https://nodejs.org/dist/v20.10.0/node-v20.10.0-linux-x64.tar.xz
-tar xvf node-v20.10.0-linux-x64.tar.xz -C /opt
-ln -s /opt/node-v20.10.0-linux-x64/bin/* /usr/local/bin
+export NODEJS_VER=v24.11.1
+wget https://nodejs.org/dist/$NODEJS_VER/node-$NODEJS_VER-linux-x64.tar.xz
+tar xvf node-$NODEJS_VER-linux-x64.tar.xz -C /opt
+ln -s /opt/node-$NODEJS_VER-linux-x64/bin/* /usr/local/bin
 
 wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
 	-O ~/bin/yq && chmod +x ~/bin/yq
