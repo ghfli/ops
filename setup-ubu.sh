@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -xe
-sudo apt install universal-ctags silversearcher-ag snapd
+sudo apt install -y universal-ctags silversearcher-ag snapd
 sudo snap install go --classic
 
 wget https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz
