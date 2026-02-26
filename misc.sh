@@ -114,3 +114,4 @@ microk8s kubectl exec -n $namespace -it pod/$couchdb -- /bin/bash
 		curl -X PUT http://127.0.0.1:5984/$db -u $admin:$password
 	done
 
+snap install certbot --classic
