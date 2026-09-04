@@ -63,6 +63,8 @@ microk8s join 10.0.0.1:...
 microk8s add-node
 #on node 3
 microk8s join 10.0.0.1:...
+microk8s status
+microk8s config > ~/.kube/config
 microk8s kubectl drain $node
 microk8s kubectl uncordon $node
 microk8s refresh-certs -c
@@ -115,3 +117,9 @@ microk8s kubectl exec -n $namespace -it pod/$couchdb -- /bin/bash
 	done
 
 snap install certbot --classic
+
+# investigate pod CrashLoopBackOff
+microk8s kubectl get pods -A
+microk8s kubectl describe pod/$pod -n $namespace
+microk8s kubectl logs $pod -n $namespace
+microk8s kubectl exec -n $namespace -it pod/$pod -- /bin/bash
